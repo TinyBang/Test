@@ -23,7 +23,7 @@
     <ClCompile Include="NFA.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="StructNFA.cpp">
+    <ClCompile Include="TurnSuffix.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

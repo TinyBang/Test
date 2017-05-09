@@ -1,34 +1,23 @@
 #include"NFA.h"
-int formalElement;
-int nextElement;
-int currentElement;
-Node* currentNode;
-void main()
+
+/*void main(string Suffix)
 {
+	
+	int i = 0;
 	NFA newnfa;
-	if (currentElement == '|')
-	{
-		Node* node1;
-		Node* node2;
-		currentNode->out1 = node1;
-		currentNode->out2 = node2;
-		currentNode->nodeType = 1;
-		Node* node3;
-		node3->nodeType = 1;
-		Node* node4;
-		node4->nodeType = 1;
-		node1->out1 = node3;
-		node1->Edge = formalElement;
-		node2->out1 = node4;
-		node2->Edge = nextElement;
-	}
-	if (currentElement = ='*')
-	{
 
-	}
-	if(currentElement==)
-}
-Node* List SubNFA()
+	
+}*/
+vector<Node*>NodeOr(char currentoperator,int edge,Node* formalNode,vector<Node*>HeadAndTail)
 {
-
+		Node head, a ;
+		Node end;
+		head.out1 = HeadAndTail[0];
+		HeadAndTail[0] = &head;
+		HeadAndTail[HeadAndTail.size()] = &end;
+		head.out2 = &a;
+		head.Edge = -1;
+		a.out1 = &end;
+		a.Edge = edge;
+		return HeadAndTail;
 }
