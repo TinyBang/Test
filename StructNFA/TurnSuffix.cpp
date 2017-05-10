@@ -9,6 +9,7 @@ using namespace std;
 map<char, int> in_stack;//RE入栈优先级
 map<char, int> out_stack;//RE出栈优先级
 map<string, string> RE;//储存RE
+vector<NFA>setsofNFA;
 
 void SetStack()//设置符号优先级，在中缀转后缀时使用                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 {
@@ -90,10 +91,21 @@ void main()
 {
 	SetStack();
 	string result;
-	string inputstream = "a&(b|c)*";
-	result = TurnSuffix(inputstream);
-	cout << result << endl;
-	NFA newnfa;
-	newnfa.structNFA(result);
+	//string inputstream = "a&(b|c)*";
+	vector<string> inputs;
+
+	inputs.push_back("a");
+	inputs.push_back("(b|c)*");
+	for (int i = 0; i < inputs.size(); i++) {
+		result = TurnSuffix(inputs[i]);
+		cout << result << endl;
+		NFA newnfa;
+		setsofNFA.push_back(newnfa.structNFA(result));
+	}
+	if(setsofNFA.size()>=1)
+	for (int i = 1; i < setsofNFA.size(); i++)
+	{
+		setsofNFA[0]=setsofNFA[0].linkNFA(setsofNFA[0], setsofNFA[i]);
+	}
 	system("pause");
 }

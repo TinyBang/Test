@@ -1,12 +1,7 @@
 #include"NFA.h"
 NFA::NFA()
 {
-	firstNode=createnewNFA();
-}
-Node* NFA::createnewNFA()
-{
-	Node startNode;
-	return &startNode;
+	firstNode=createNode();
 }
 Node* NFA::createNode() {
 	Node newNode;
@@ -30,41 +25,45 @@ vector<Node*>NFA::NodeOr(int edge,  vector<Node*>HeadAndTail)
 }
 vector<Node*>NFA::NodeStar(vector<Node*>HeadAndTail)
 {
-	Node head, a, b;
-	head.out1 = HeadAndTail[0];
-	HeadAndTail[0] = &head;
-	head.out2 = &a;
-	head.Edge = -1;
-	a.out1 = &b;
-	a.Edge = -1;
-	b.State = 1;
+	Node *head = createNode();
+	Node *a = createNode(); 
+	Node*b=createNode();
+	head->out1 = HeadAndTail[0];
+	HeadAndTail[0] = head;
+	head->out2 = a;
+	head->Edge = -1;
+	a->out1 = b;
+	a->Edge = -1;
+	b->State = 1;
 	int size = HeadAndTail.size();
 	for (int i = size-1;i>0 ; i--)
 	{
-	HeadAndTail[i]->out1 = &a;
+	HeadAndTail[i]->out1 = a;
 	HeadAndTail[i]->Edge = -1;
 	HeadAndTail.pop_back();
 	}
-	HeadAndTail.push_back(&b);
+	HeadAndTail.push_back(b);
 	return HeadAndTail;
 }
 vector<Node*>NFA::NodePlus(vector<Node*>HeadAndTail)
 {
-	Node head, a, b;
-	head.out1 = HeadAndTail[0];
-	HeadAndTail[0] = &head;
-	head.Edge = -1;
-	a.out1 = &b;
-	a.Edge = -1;
-	b.State = 1;
+	Node *head = createNode();
+	Node *a = createNode();
+	Node*b = createNode();
+	head->out1 = HeadAndTail[0];
+	HeadAndTail[0] = head;
+	head->Edge = -1;
+	a->out1 = b;
+	a->Edge = -1;
+	b->State = 1;
 	int size = HeadAndTail.size();
 	for (int i = size - 1; i>0; i--)
 	{
-		HeadAndTail[i]->out1 = &a;
+		HeadAndTail[i]->out1 = a;
 		HeadAndTail[i]->Edge = -1;
 		HeadAndTail.pop_back();
 	}
-	HeadAndTail.push_back(&b);
+	HeadAndTail.push_back(b);
 	return HeadAndTail;
 }
 void NFA::printNFA(vector<Node*>HeadAndTail)
@@ -83,15 +82,15 @@ void NFA::printNFA(vector<Node*>HeadAndTail)
 	}*/
 
 }
-void NFA::structNFA(string EP)
+NFA NFA::structNFA(string EP)
 {
 
-	Node a;
+	Node *a=createNode();
 	firstNode->Edge = EP[0];
-	firstNode->out1 = &a;
-	a.State = 1;
+	firstNode->out1 = a;
+	a->State = 1;
 	HeadAndTail.push_back(firstNode);
-	HeadAndTail.push_back(&a);
+	HeadAndTail.push_back(a);
 	for (int i=1; i < EP.length(); i++)
 	{
 		if (EP[i] == '|')
@@ -107,6 +106,22 @@ void NFA::structNFA(string EP)
 			continue;
 		}
 	}
+
 	cout << "Done!" << endl;
-	
+	return *this;
+}
+vector<Node*> NFA::getHeadAndTail()
+{
+	return HeadAndTail;
+}
+NFA NFA::linkNFA(NFA a, NFA b)
+{
+
+	for (int i = 0; i < (a.getHeadAndTail()).size(); i++)
+	{
+		(a.getHeadAndTail())[i]->out1 = (b.getHeadAndTail())[0];
+		(a.getHeadAndTail())[i]->Edge = -1;
+		(a.getHeadAndTail())[i]->State = 0;
+	}
+	return a;
 }

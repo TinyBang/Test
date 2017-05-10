@@ -1,2 +1,5 @@
-﻿  StructNFA.vcxproj -> F:\课程\编译原理课程设计\StructNFA\Debug\StructNFA.exe
+﻿  NFA.cpp
+f:\课程\编译原理课程设计\structnfa\structnfa\nfa.cpp(94): warning C4018: “<”: 有符号/无符号不匹配
+f:\课程\编译原理课程设计\structnfa\structnfa\nfa.cpp(120): warning C4018: “<”: 有符号/无符号不匹配
+  StructNFA.vcxproj -> F:\课程\编译原理课程设计\StructNFA\Debug\StructNFA.exe
   StructNFA.vcxproj -> F:\课程\编译原理课程设计\StructNFA\Debug\StructNFA.pdb (Full PDB)

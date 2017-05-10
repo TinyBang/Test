@@ -19,14 +19,16 @@ class NFA
 public:
 	NFA();
 	Node* createnewNFA();
-	void structNFA(string);
+	NFA structNFA(string);
 	Node* firstNode;
 	vector<Node*>NodeOr( int edge, vector<Node*>HeadAndTail);
 	vector<Node*>NodeStar(vector<Node*>HeadAndTail);
 	vector<Node*> NodePlus(vector<Node*> HeadAndTail);
 	void printNFA(vector<Node*> HeadAndTail);
 	Node* createNode();
-private:
+	NFA linkNFA(NFA,NFA);
+	vector<Node*> getHeadAndTail();
+	
 	vector<Node*> HeadAndTail;
 	vector<Node> AllNode;
 };
