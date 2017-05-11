@@ -87,11 +87,78 @@ string TurnSuffix(string re)
 	}
 	return tmp;
 }
+
+
+NFA linkNFA(NFA a, NFA b)
+{
+	for (int i = 0; i < b.AllNode.size(); i++)
+	{
+		if (b.AllNode[i].out1 != -1)
+			b.AllNode[i].out1 += a.AllNode.size();
+		if (b.AllNode[i].out2 != -1)
+			b.AllNode[i].out2 += a.AllNode.size();
+	}
+	for (int i = 0; i < b.HeadAndTail.size(); i++)
+	{
+		b.HeadAndTail[i] += a.AllNode.size();
+	}//修改b中每个点的序号
+	if(a.HeadAndTail.size()>1)
+	for (int i = 1; i < a.HeadAndTail.size(); i++)//把a的Tail指向b的head
+	{
+		a.AllNode[a.HeadAndTail[i]].out1 = b.HeadAndTail[0];
+		a.AllNode[a.HeadAndTail[i]].State = 0;//对应的接受状态改为不可接受
+	}
+	else
+	{
+		a.AllNode[0].out1 = b.HeadAndTail[0];
+	}
+	for (int i = 0; i < b.AllNode.size(); i++)
+	{
+		a.AllNode.push_back(b.AllNode[i]);
+	}
+	for (int i = a.HeadAndTail.size(); i > 1; i--)
+	{
+		a.HeadAndTail.pop_back();
+	}
+	for (int i = 1; i < b.HeadAndTail.size(); i++)
+	{
+		a.HeadAndTail.push_back(b.HeadAndTail[i]);
+	}
+	return a;
+}
+NFA mergeNFA(NFA a, NFA b)
+{
+	NFA headNFA;
+	headNFA = linkNFA(headNFA, a);
+	for (int i = 0; i < b.AllNode.size(); i++)
+	{
+		if (b.AllNode[i].out1 != -1)
+			b.AllNode[i].out1 += headNFA.AllNode.size();
+		if (b.AllNode[i].out2 != -1)
+			b.AllNode[i].out2 += headNFA.AllNode.size();
+	}
+	for (int i = 0; i < b.HeadAndTail.size(); i++)
+	{
+		b.HeadAndTail[i] += headNFA.AllNode.size();
+	}//修改b中每个点的序号
+	headNFA.AllNode[0].out2 = b.HeadAndTail[0];
+	for (int i = 0; i < b.AllNode.size(); i++)
+	{
+		headNFA.AllNode.push_back(b.AllNode[i]);
+	}
+	for (int i = 1; i < b.HeadAndTail.size(); i++)
+	{
+		headNFA.HeadAndTail.push_back(b.HeadAndTail[i]);
+	}
+	return headNFA;
+}
+
+
+
 void main()
 {
 	SetStack();
 	string result;
-	//string inputstream = "a&(b|c)*";
 	vector<string> inputs;
 
 	inputs.push_back("a");
@@ -105,7 +172,9 @@ void main()
 	if(setsofNFA.size()>=1)
 	for (int i = 1; i < setsofNFA.size(); i++)
 	{
-		setsofNFA[0]=setsofNFA[0].linkNFA(setsofNFA[0], setsofNFA[i]);
+		setsofNFA[0]=linkNFA(setsofNFA[0], setsofNFA[i]);//合并简单NFA，成为复杂NFA
 	}
+	setsofNFA.push_back(setsofNFA[0]);
+	setsofNFA[0] =mergeNFA(setsofNFA[0], setsofNFA[1]);
 	system("pause");
 }

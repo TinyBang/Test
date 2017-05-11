@@ -1,4 +1,8 @@
 #pragma once
+#ifndef NFA_H
+#define NFA_H
+
+
 #include<iostream>
 #include<vector>
 #include<string>
@@ -8,27 +12,27 @@ using namespace std;
 
 struct Node
 {
-	Node* out1=NULL;
-	Node* out2=NULL;
-	int Edge=-1;
-	int State=0;
+	int out1;
+	int out2;
+	int Edge;
+	int State;
 	//int NodeNumber;
 };
 class NFA
 {
 public:
 	NFA();
-	Node* createnewNFA();
 	NFA structNFA(string);
-	Node* firstNode;
-	vector<Node*>NodeOr( int edge, vector<Node*>HeadAndTail);
-	vector<Node*>NodeStar(vector<Node*>HeadAndTail);
-	vector<Node*> NodePlus(vector<Node*> HeadAndTail);
-	void printNFA(vector<Node*> HeadAndTail);
-	Node* createNode();
-	NFA linkNFA(NFA,NFA);
-	vector<Node*> getHeadAndTail();
-	
-	vector<Node*> HeadAndTail;
+	vector<int>NodeOr( int edge, vector<int>HeadAndTail);
+	vector<int>NodeStar(vector<int>HeadAndTail);
+	vector<int> NodePlus(vector<int> HeadAndTail);
+	void printNFA(vector<int> HeadAndTail);
+	int createNode();
+//	NFA linkNFA(NFA,NFA);
+	vector<int> getHeadAndTail();
 	vector<Node> AllNode;
+//	NFA mergeNFA(NFA, NFA);
+	vector<int> HeadAndTail;
+	
 };
+#endif // !NFA_H
