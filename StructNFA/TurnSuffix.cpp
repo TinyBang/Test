@@ -3,6 +3,8 @@
 #include<map>
 #include<iostream>
 #include"NFA.h"
+#include"DFA.h"
+#include<fstream>
 
 using namespace std;
 
@@ -10,7 +12,15 @@ map<char, int> in_stack;//RE入栈优先级
 map<char, int> out_stack;//RE出栈优先级
 map<string, string> RE;//储存RE
 vector<NFA>setsofNFA;
+ifstream ifile;
+ofstream ofile;
+int kuohao = 0;
 
+void initcpp();
+void DFAToCode(DFANode,DFA);
+void outputcpp(string);
+
+ 
 void SetStack()//设置符号优先级，在中缀转后缀时使用                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 {
 	in_stack.insert(make_pair('#', 0));
@@ -152,7 +162,114 @@ NFA mergeNFA(NFA a, NFA b)
 	}
 	return headNFA;
 }
+void generateCode(DFA dfa) {
+	ofile.open("yylex.cpp", ios::out);
+	initcpp();
+	//DFANode currentNode = dfa.ALLNode[0];
+	DFAToCode(dfa.ALLNode[0], dfa);
+	ofile.close();
+}
+void initcpp()
+{
+	
+	outputcpp("#include<vector>");
+	outputcpp("#include<string>");
+	outputcpp("#include<iostream>");
+	outputcpp("#include<fstream>");
+	outputcpp("using namespace std;");
+	outputcpp("vector<pair<string,string>>result");
+	outputcpp("string elemnts=\"\"");
+	string c = "\n void main()";
+	outputcpp(c);
+	kuohao++;
+	outputcpp(" {\n ifstream ifile;");
+	outputcpp("	ifile.open(\"lex.l\", ios::in);");
+	outputcpp("for(;;){");
+	kuohao++;
+	outputcpp("if(ifile.eof()) break;");
 
+	outputcpp("char current=ifile.get();");
+
+
+}
+
+void outputcpp(string a)
+{
+	a += "\n";
+	for (int i = 0; i < a.length(); i++)
+	{
+		ofile.put(a[i]);
+	}
+}
+void  DFAToCode(DFANode node, DFA dfa)
+{
+	if (node.out.size() != 0)
+		for (int i = 0; i < node.out.size(); i++)
+		{
+			if (node.out[i].second != node.NodeNumber) {
+				string c="";
+				if (i == 0)
+					c += "if(current=='";
+				else
+					c += "else if(current=='";
+				c += node.out[i].first;
+				c += "'){";
+				outputcpp(c);
+				outputcpp("element+=current;");
+				outputcpp("current=ifile.get();");
+				kuohao++;
+				DFAToCode(dfa.ALLNode[node.out[i].second], dfa);
+				if (i == node.out.size() - 1 && node.state == 1)
+				{
+					//if (node.out.size())
+						//outputcpp("}");
+					outputcpp("else{");
+					outputcpp("result.push_back(pair<string, string>(element, id)); ");
+					outputcpp("element=\"\";");
+					outputcpp("continue;");
+					outputcpp("}");
+					outputcpp("}");
+				}
+			}
+			else
+			{
+				outputcpp("for(;;)");
+				string a="";
+				a += "if(current=='";
+				a += node.out[i].first;
+				a += "'){";
+				outputcpp(a);
+				outputcpp("element+=current;");
+				outputcpp("current=ifile.get();");
+				outputcpp("continue;");
+				outputcpp("}");
+				outputcpp("else{");
+				outputcpp("result.push_back(pair<string, string>(element, id)); ");
+				outputcpp("element=\"\";");
+				outputcpp("break;");
+				outputcpp("}");
+				outputcpp("}");
+			}
+		}
+	else
+	{
+		if (node.state == 1)
+		{
+				outputcpp("}");
+		////	outputcpp("else{");
+		//	outputcpp("result.push_back(pair<string, string>(element, id)); ");
+		//	outputcpp("element=\"\";");
+		//	outputcpp("continue;");
+		//	outputcpp("}");
+		}
+		else
+		{
+			cout << "error" << endl;
+			abort;
+		}
+	}
+
+}
 
 
 void main()
@@ -176,5 +293,9 @@ void main()
 	}
 	setsofNFA.push_back(setsofNFA[0]);
 	setsofNFA[0] =mergeNFA(setsofNFA[0], setsofNFA[1]);
+	DFA dfa;
+	dfa=dfa.turnDFA(setsofNFA[0]);
+	dfa.ALLNode[3].out .push_back( pair<int, int>(80,3));
+	generateCode(dfa);
 	system("pause");
 }

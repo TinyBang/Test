@@ -16,7 +16,8 @@ struct Node
 	int out2;
 	int Edge;
 	int State;
-	//int NodeNumber;
+	int NodeNumber;
+	
 };
 class NFA
 {

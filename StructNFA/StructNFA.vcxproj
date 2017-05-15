@@ -146,9 +146,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DFA.h" />
     <ClInclude Include="NFA.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DFA.cpp" />
     <ClCompile Include="NFA.cpp" />
     <ClCompile Include="TurnSuffix.cpp" />
   </ItemGroup>
