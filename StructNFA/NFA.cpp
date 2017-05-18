@@ -1,16 +1,22 @@
 #include"NFA.h"
+NFA::NFA(string action)
+{
+	this->action += action;
+	createNode();
+	HeadAndTail.push_back(0);
+}
 NFA::NFA()
 {
 	createNode();
 	HeadAndTail.push_back(0);
-}
+};
 int NFA::createNode() {
 	Node newNode;
 	newNode.Edge = -1;
 	newNode.out1 = newNode.out2=-1;
 	newNode.State = 0;
+	newNode.action += action;
 	AllNode.push_back(newNode);
-
 	return AllNode.size()-1;
 }
 vector<int>NFA::NodeOr(int edge,  vector<int>HeadAndTail)
@@ -106,6 +112,10 @@ NFA NFA::structNFA(string EP)
 		else if (EP[i]=='*')
 		{
 		HeadAndTail= NodeStar(HeadAndTail);
+		}
+		else if (EP[i]=='+')
+		{
+			HeadAndTail = NodePlus(HeadAndTail);
 		}
 		else
 		{

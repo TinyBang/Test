@@ -16,7 +16,7 @@ ifstream ifile;
 ofstream ofile;
 int kuohao = 0;
 
-void initcpp();
+void initcpp(DFA dfa);
 void DFAToCode(DFANode,DFA);
 void outputcpp(string);
 
@@ -25,13 +25,15 @@ void SetStack()//设置符号优先级，在中缀转后缀时使用
 {
 	in_stack.insert(make_pair('#', 0));
 	in_stack.insert(make_pair('(', 1));
-	in_stack.insert(make_pair('*', 7));
-	in_stack.insert(make_pair('|', 3));
+	in_stack.insert(make_pair('*', 3));
+	in_stack.insert(make_pair('+', 3));
+	in_stack.insert(make_pair('|', 7));
 	in_stack.insert(make_pair('&', 5));
 	in_stack.insert(make_pair(')', 8));
 	out_stack.insert(make_pair('#', 0));
 	out_stack.insert(make_pair('(', 8));
 	out_stack.insert(make_pair('*', 6));
+	out_stack.insert(make_pair('+', 6));
 	out_stack.insert(make_pair('|', 2));
 	out_stack.insert(make_pair('&', 4));
 	out_stack.insert(make_pair(')', 1));
@@ -50,7 +52,7 @@ string TurnSuffix(string re)
 
 	while (!s.empty() && ch != '\0')
 	{
-		if (ch != '*' && ch != '|' && ch != '&' && ch != '(' && ch != ')')
+		if (ch != '*' && ch != '|' && ch != '&' && ch != '(' && ch != ')'&&ch!='+')
 		{//如果读到的是单词字母，把它们存在tmp中
 			tmp.append(1, ch);
 			ch = re[++i];
@@ -164,33 +166,116 @@ NFA mergeNFA(NFA a, NFA b)
 }
 void generateCode(DFA dfa) {
 	ofile.open("yylex.cpp", ios::out);
-	initcpp();
+	initcpp(dfa);
 	//DFANode currentNode = dfa.ALLNode[0];
-	DFAToCode(dfa.ALLNode[0], dfa);
+	//DFAToCode(dfa.ALLNode[0], dfa);
 	ofile.close();
 }
-void initcpp()
+void initcpp(DFA dfa)
 {
-	
+
 	outputcpp("#include<vector>");
 	outputcpp("#include<string>");
 	outputcpp("#include<iostream>");
 	outputcpp("#include<fstream>");
 	outputcpp("using namespace std;");
-	outputcpp("vector<pair<string,string>>result");
-	outputcpp("string elemnts=\"\"");
-	string c = "\n void main()";
-	outputcpp(c);
-	kuohao++;
-	outputcpp(" {\n ifstream ifile;");
-	outputcpp("	ifile.open(\"lex.l\", ios::in);");
-	outputcpp("for(;;){");
-	kuohao++;
-	outputcpp("if(ifile.eof()) break;");
+	outputcpp("vector<pair<string,string>>lexresult;");
+	outputcpp("string element=\"\";");
+	//outputcpp("\n void main()");
+//	outputcpp(" {\n ifstream ifile;");
+	//outputcpp("	ifile.open(\"lex.l\", ios::in);");
+	//outputcpp("for(;;){");
+	//kuohao++;
+//	outputcpp("if(ifile.eof()) break;");
+//	outputcpp("char current=ifile.get();");
+	outputcpp("struct DFANode\n{");
+	outputcpp("vector<int> newNode;");
+	outputcpp("vector<pair<int, int>> out;");
+	outputcpp("int state;");
+	outputcpp("int NodeNumber;");
+	outputcpp("};");
+	outputcpp("class DFA{");
+	outputcpp("public:");
+	outputcpp("DFA() {};");
+	outputcpp("vector<DFANode> ALLNode;//所有DFANode的集合");
+	outputcpp("vector<int> HeadAndTail;//DFA的头和可接受状态");
+	outputcpp("};");
 
-	outputcpp("char current=ifile.get();");
-
-
+	outputcpp("int transState(int current, char edge, DFA dfa){");
+	outputcpp("int des = -1;");
+	outputcpp("for (int i = 0; i<dfa.ALLNode[current].out.size(); i++){");
+	outputcpp("	if (dfa.ALLNode[current].out[i].first == edge){");
+	outputcpp("des = dfa.ALLNode[current].out[i].second;");
+	outputcpp("break;\n}\n}");
+	outputcpp("if (des==-1) {\n cout<<\"error!\"<<endl;\nabort();\n}");
+	outputcpp("return des;\n}");
+	outputcpp("bool ifAcc(int currentNode, DFA dfa){");
+	outputcpp("	if (dfa.ALLNode[currentNode].state == 1)");
+	outputcpp("return true;");
+	outputcpp("else");
+	outputcpp("return false;\n}");
+	outputcpp("	void main()\n{");
+	outputcpp("ifstream ifile(\"test.txt\", ios::in);");
+	outputcpp("DFA dfa;");
+	for (int i = 0; i < dfa.ALLNode.size(); i++)
+	{
+		string a = "node";
+		a += i + 48;
+		outputcpp("DFANode " + a + ";");
+		string c = a;
+		c += ".NodeNumber=";
+		c += dfa.ALLNode[i].NodeNumber + 48;
+		c += ";";
+		outputcpp(c);
+		for (int j = 0; j < dfa.ALLNode[i].out.size(); j++)
+		{
+			string d = a;
+			d += ".out.push_back(pair<int,int>('";
+			d += dfa.ALLNode[i].out[j].first;
+			d += "',";
+			d += dfa.ALLNode[i].out[j].second + 48;
+			d += "));";
+			//DFANode node;
+			//node.out.push_back(pair<int, int>(dfa.ALLNode[i].out[j].first, dfa.ALLNode[i].out[j].second);
+			outputcpp(d);
+		}
+		string e = a;
+		e += ".state=";
+		e += dfa.ALLNode[i].state + 48;
+		e += ";";
+		outputcpp(e);
+		string f = "dfa.ALLNode.push_back(";
+		f += a;
+		f += ");";
+		outputcpp(f);
+	}
+	outputcpp("	int currentNode = 0;");
+	outputcpp("char current=' ';");
+	outputcpp("string action;");
+	outputcpp("	for (;;) {");
+	outputcpp("		current = ifile.get();");
+	outputcpp("	if (current==-1) {");
+	outputcpp("		if (ifAcc(currentNode, dfa)) {");
+	outputcpp("if(element!=\"\"&&element!=\" \"){");
+	outputcpp("			lexresult.push_back(pair<string, string>(element, action));");
+	outputcpp("				element = \"\";");
+	outputcpp("currentNode=0;\n}\n}");
+	outputcpp("else abort();");
+	outputcpp("break;\n}");
+	outputcpp("	if (current != ' ') {");
+	outputcpp("	element += current;");
+	outputcpp("currentNode = transState(currentNode, current, dfa);");
+	outputcpp("continue;\n  }");
+	outputcpp("	else {");
+	outputcpp("		if (ifAcc(currentNode, dfa)) {");
+	outputcpp("			lexresult.push_back(pair<string, string>(element, action));");
+	outputcpp("				element = \"\";");
+	outputcpp("currentNode=0;");
+	outputcpp("continue;\n}");
+	outputcpp("	else {");
+	outputcpp("	cout <<\"error!\" << endl;");
+	outputcpp("abort();");	
+	outputcpp("}\n}\n}	for (int i = 0; i < lexresult.size(); i++){\ncout << lexresult[i].first << \",\" << lexresult[i].second << endl;\n}\nsystem(\"pause\");\n}");
 }
 
 void outputcpp(string a)
@@ -201,7 +286,7 @@ void outputcpp(string a)
 		ofile.put(a[i]);
 	}
 }
-void  DFAToCode(DFANode node, DFA dfa)
+/*void  DFAToCode(DFANode node, DFA dfa)
 {
 	if (node.out.size() != 0)
 		for (int i = 0; i < node.out.size(); i++)
@@ -221,11 +306,18 @@ void  DFAToCode(DFANode node, DFA dfa)
 				DFAToCode(dfa.ALLNode[node.out[i].second], dfa);
 				if (i == node.out.size() - 1 && node.state == 1)
 				{
-					//if (node.out.size())
-						//outputcpp("}");
 					outputcpp("else{");
-					outputcpp("result.push_back(pair<string, string>(element, id)); ");
-					outputcpp("element=\"\";");
+					if (node.state == 1) {
+						outputcpp("if(element.size()!=0){");
+						outputcpp("result.push_back(pair<string, string>(element, id)); ");
+						outputcpp("element=\"\";");
+						outputcpp("}");
+						outputcpp("else abort;");
+					}
+					else {
+						outputcpp("result.push_back(pair<string, string>(element, id)); ");
+						outputcpp("element=\"\";");
+					}
 					outputcpp("continue;");
 					outputcpp("}");
 					outputcpp("}");
@@ -269,7 +361,7 @@ void  DFAToCode(DFANode node, DFA dfa)
 		}
 	}
 
-}
+}*/
 
 
 void main()
@@ -277,25 +369,35 @@ void main()
 	SetStack();
 	string result;
 	vector<string> inputs;
-
+	string action;
 	inputs.push_back("a");
-	inputs.push_back("(b|c)*");
+	inputs.push_back("b|c*");
+	inputs.push_back("b|c+");
+	vector<string>action1;
+	string a = "id";
+	action1.push_back(a);
+	action1.push_back(a);
+	a = "integer";
+	action1.push_back(a);
 	for (int i = 0; i < inputs.size(); i++) {
 		result = TurnSuffix(inputs[i]);
 		cout << result << endl;
-		NFA newnfa;
+		NFA newnfa(action1[i]);
 		setsofNFA.push_back(newnfa.structNFA(result));
 	}
 	if(setsofNFA.size()>=1)
-	for (int i = 1; i < setsofNFA.size(); i++)
+	for (int i = 1; i < 2; i++)
 	{
 		setsofNFA[0]=linkNFA(setsofNFA[0], setsofNFA[i]);//合并简单NFA，成为复杂NFA
 	}
-	setsofNFA.push_back(setsofNFA[0]);
-	setsofNFA[0] =mergeNFA(setsofNFA[0], setsofNFA[1]);
+	//setsofNFA.push_back(setsofNFA[0]);
+	//for (int i = 1; i < setsofNFA.size(); i++)
+	//{
+		setsofNFA[0] = mergeNFA(setsofNFA[0], setsofNFA[2]);
+	//}
 	DFA dfa;
 	dfa=dfa.turnDFA(setsofNFA[0]);
-	dfa.ALLNode[3].out .push_back( pair<int, int>(80,3));
+//	dfa.ALLNode[3].out .push_back( pair<int, int>(80,3));
 	generateCode(dfa);
 	system("pause");
 }

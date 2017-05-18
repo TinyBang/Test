@@ -1,16 +1,16 @@
 #include"DFA.h"
-vector<int> symbolTable;
+vector<int> symbolTable1;
 #include<map>
 int nodeNumber = 0;
-void initSymbolTable()
+void initSymbolTable1()
 {
-	symbolTable.push_back('a');
-	symbolTable.push_back('b');
-	symbolTable.push_back('c');
+	symbolTable1.push_back('a');
+	symbolTable1.push_back('b');
+	symbolTable1.push_back('c');
 }
 
 
-bool isSameState(vector<int> v1, vector<DFANode> v)
+int isSameState(vector<int> v1, vector<DFANode> v)
 {
 
 	for (int i = 0; i < v.size(); i++)
@@ -18,15 +18,15 @@ bool isSameState(vector<int> v1, vector<DFANode> v)
 		vector<int> v2 = v[i].newNode;
 		if (v1.size() != v2.size())
 			continue;
-		for (int i = 0; i < v1.size(); i++)
+		for (int j = 0; j < v1.size(); j++)
 		{
-			if (v1[i] != v2[i])
+			if (v1[j] != v2[j])
 				break;
-			if (i == v1.size() - 1)
-				return true;
+			if (j== v1.size() - 1)
+				return i;
 		}
 	}
-	return false;
+	return -1;
 }
 bool isInState(int a, vector<int> v1)
 {
@@ -97,37 +97,85 @@ DFANode DFA::turnNode(NFA nfa, vector<int> head, int edge)
 
 DFA DFA::turnDFA(NFA cnfa)
 {
-	initSymbolTable();
+	initSymbolTable1();
 	int head = cnfa.HeadAndTail[0];
 	vector<DFANode> dfaNode;
 	DFANode nowNode = turnNode(cnfa, head);
 	dfaNode.push_back(nowNode);
 	for (int i = 0; i < dfaNode.size(); i++)
 	{
-		for (int j = 0; j < symbolTable.size(); j++)
+		for (int j = 0; j < symbolTable1.size(); j++)
 		{
-			nowNode = turnNode(cnfa, dfaNode[i].newNode, symbolTable[j]);
-			if (nowNode.newNode.size() != 0&&!isSameState(nowNode.newNode,dfaNode))
+			nowNode = turnNode(cnfa, dfaNode[i].newNode, symbolTable1[j]);
+			if (nowNode.newNode.size() != 0)
 			{
-				dfaNode.push_back(nowNode);
-				dfaNode[i].out.push_back(pair<int, int>(symbolTable[j], nodeNumber-1));
-			}
+				if (isSameState(nowNode.newNode, dfaNode)==-1)
+				{
+					dfaNode[i].out.push_back(pair<int, int>(symbolTable1[j], nodeNumber - 1));
+					dfaNode.push_back(nowNode);
+				}
+				else
+				{
+					dfaNode[i].out.push_back(pair<int, int>(symbolTable1[j], isSameState(nowNode.newNode, dfaNode)));
+					nodeNumber--;
+				}
+			}	
 			else
 			{
 				nodeNumber--;
 			}
 		}
 	}
+
 	DFA dfa;
 	dfa.ALLNode = dfaNode;
 	return dfa;
 }
 
+/*bool changeNode(DFA dfa,DFANode dfaNode)
+{
+	for (int i = 0; i < dfaNode.newNode.size(); i++)
+	{
+		for (int j = 0; j < dfaNode.out.size(); j++)
+		{
+			for (int m = 0; m < symbolTable.size(); m++)
+			{
+
+			}
+		}
+		
+	}
+}*/
+
 DFA DFA::minDFA(DFA cdfa)
 {
 	vector<DFANode> nodeList = cdfa.ALLNode;
+	vector<vector<DFANode>> Node;
+	DFANode term;
+	DFANode unterm;
+	for (int i = 0; i < nodeList.size(); i++)
+	{
+		if (nodeList[i].state == 1)
+			term.newNode.push_back(i);
+		else
+			unterm.newNode.push_back(i);
+	}
+	while (true)
+	{
+		for (int i = 0; i < Node.size(); i++)
+		{
+			for (int j = 0; j < Node[i].size(); j++)
+			{
+				for (int m = 0; m < Node[i][j].out.size(); m++)
+				{
+					
+				}
+			}
+		}
+	}
+	
 	DFA miDfa;
-
+	
 	return miDfa;
 }
 

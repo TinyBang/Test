@@ -17,12 +17,13 @@ struct Node
 	int Edge;
 	int State;
 	int NodeNumber;
-	
+	string action="";
 };
 class NFA
 {
 public:
 	NFA();
+	NFA(string);
 	NFA structNFA(string);
 	vector<int>NodeOr( int edge, vector<int>HeadAndTail);
 	vector<int>NodeStar(vector<int>HeadAndTail);
@@ -34,6 +35,6 @@ public:
 	vector<Node> AllNode;
 //	NFA mergeNFA(NFA, NFA);
 	vector<int> HeadAndTail;
-	
+	string action = "";
 };
 #endif // !NFA_H
