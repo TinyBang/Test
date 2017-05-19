@@ -1,26 +1,125 @@
 #include<string>
 #include<stack>
 #include<map>
+#include<vector>
 #include<iostream>
 #include"NFA.h"
 #include"DFA.h"
 #include<fstream>
-
+#define FSTART -1
+#define FEND -2
+#define SECOND -3
+#define ERROR -4
 using namespace std;
 
+vector<int> symbolTable1;
 map<char, int> in_stack;//RE入栈优先级
 map<char, int> out_stack;//RE出栈优先级
 map<string, string> RE;//储存RE
+map<string, string> id2re;//id与re的map
+map<string, string> re2ac;//正则表达式和语义动作的map
 vector<NFA>setsofNFA;
 ifstream ifile;
 ofstream ofile;
-int kuohao = 0;
+vector<string> actionTable;
+int line = 0;
+
+void readFile();
+int checkState(char c);
+string turnRe(string str);
 
 void initcpp(DFA dfa);
 void DFAToCode(DFANode,DFA);
 void outputcpp(string);
+void readFile() {
+	ifile.open("lex.l", ios::in);
+	ofile.open("yylex.cpp", ios::out);
+	if (!ifile.good())
+	{
+		cout << "Open file error!";
+		return;
+	}
+	//将lex.l文件分隔开
+	char c = ifile.get();
+	int state = checkState(c);
+	if (state != FSTART)
+		cout << "File Error!";
+	while (!ifile.eof() && state != FEND)
+	{
+		c = ifile.get();
+		if (c == '%') {
+			state = checkState(c);
+			continue;
+		}
+		if (c == '\n')
+			line++;
+		ofile.put(c);
+	}//完成lex.l辅助定义部分的解析
+	while (!ifile.eof())
+	{
+		c = ifile.get();
+		state = checkState(c);
+		if (state == SECOND)
+			break;
+		ifile.unget();
+		string id, re;
+		ifile >> id >> re;
+		ifile.get();
+		re = turnRe(re);
+		id2re[id] = re;
+		cout << id << "	" << id2re[id] << endl;
+	}//正则表达式定义读取完毕
+	while (!ifile.eof())
+	{
+		c = ifile.get();
+		state = checkState(c);
+		if (state == SECOND)
+			break;
+		ifile.unget();
+		string re, ac, str;
+		getline(ifile, str);
+		if (str == "")
+			continue;
+		string delim = "\t";
+		size_t offset = str.find_first_of(delim);//找到规则定义中的分界符
+		re = str.substr(0, offset);
+		while (str[offset] == ' ' || str[offset] == '\t')
+			offset++;
+		ac = str.substr(offset, str.size() - offset);
+		re2ac[re] = ac;
+		//cout << re << re2ac[re] << endl;
+	}
 
- 
+
+	c = 1;
+	while ((c = ifile.get()) != -1)
+	{
+		ofile.put(c);
+	}
+	ifile.close();
+	ofile.close();
+	//readfile done.
+}
+int checkState(char c)
+{
+	if (c == '%')
+	{
+		char cc = ifile.get();
+		switch (cc)
+		{
+		case '{':
+			return -1;
+		case '}':
+			return -2;
+		case '%':
+			return -3;
+		default:
+			ifile.unget();
+			return ERROR;
+		}
+	}
+	return 0;
+}
 void SetStack()//设置符号优先级，在中缀转后缀时使用                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 {
 	in_stack.insert(make_pair('#', 0));
@@ -37,6 +136,123 @@ void SetStack()//设置符号优先级，在中缀转后缀时使用
 	out_stack.insert(make_pair('|', 2));
 	out_stack.insert(make_pair('&', 4));
 	out_stack.insert(make_pair(')', 1));
+}
+bool isInTable(int a, vector<int> v1)
+{
+	for (int i = 0; i < v1.size(); i++)
+		if (a == v1[i])
+			return true;
+
+	return false;
+}
+string turnRe(string re)
+{
+	string str = "", temp;	//str用于输出的串，temp用于提取{}和“”之间的内容
+	char temp1;
+	int i = 0;				//re串的下标
+	int offset, intcount;
+	char c = re[0];
+	//map<string, string>::iterator iter;//迭代器，类似指针
+	string iter;
+	map<string, string >::iterator l_it;;
+	while (c != '\0')
+	{
+		switch (c)
+		{
+		case '[':
+			str.append(1, '(');
+			c = re[++i];
+			break;
+		case ']':
+			str.append(1, ')');
+			c = re[++i];
+			break;
+		case '-':
+		{//例如0-3，输出0123
+			char before = re[i - 1];
+			char after = re[i + 1];
+			str.erase(str.length() - 1, 1);//删除前一个（下面default中写的）
+			if (*(str.end() - 1) != '(')
+				str.append(1, '|');
+			while (before<after)
+			{
+				str.append(1, before);
+				if (!isInTable(before, symbolTable1))
+					symbolTable1.push_back(before);
+				str.append(1, '|');
+				before++;
+			}
+			if (!isInTable(after, symbolTable1))
+				symbolTable1.push_back(after);
+			str.append(1, after);
+			c = re[i + 2];
+			i = i + 2;
+			break;
+		}
+		case '{':
+			offset = re.find_first_of('}', i);//从i开始查找在字符串中第一个与}中某个字符匹配的字符，返回它的位置
+			for (int j = i + 1; j<offset; j++)//提取{ }中的内容
+			{
+				temp.append(1, re[j]);
+			}
+			l_it = id2re.find(temp);
+			if (l_it != id2re.end())
+				temp = id2re[temp];
+			//str.append(1, '(');
+			/*while (true)
+			{
+			int m = temp.find('(');
+			int n = temp.find(')');
+			if (m != -1)
+			temp.erase('(');
+			}*/
+			str.append(temp.substr(1, temp.size() - 2));
+
+			//str.append(1, ')');
+			temp = "";
+			i = offset;//从右括号处继续
+			c = re[++i];
+			break;
+		case '"':
+			offset = re.find_first_of('"', i + 1);
+			temp = re.substr(i + 1, offset - i - 1);//提取两个引号之间的部分
+			str.append(1, '(');
+			str.append(temp);
+			str.append(1, ')');
+			i = offset;
+			c = re[++i];
+			break;
+		case '(':
+			str.append(1, '$');
+			str.append(1, '(');
+			c = re[++i];
+			break;
+			//case ')':
+			//c = re[++i];
+			//break;
+		case '\\':
+			temp1 = re[++i];
+			if (temp1 == 't')
+				str.append(1, '\t');
+			else if (temp1 == 'n')
+				str.append(1, '\n');
+			else
+				str.append(1, temp1);
+			c = re[++i];
+			break;
+
+
+		default:
+			str.append(1, c);
+
+			c = re[++i];
+			break;
+		}
+	}
+	return str;
+
+
+
 }
 
 string TurnSuffix(string re)
@@ -171,6 +387,30 @@ void generateCode(DFA dfa) {
 	//DFAToCode(dfa.ALLNode[0], dfa);
 	ofile.close();
 }
+string transtostringnumber(int a) {
+	int tenth = 0;
+	int temp = a;
+	int temptenth = 1;
+	string resultstring="";
+	for (;;) {
+		if (temp >= 10) {
+			temp /= 10;
+			tenth++;
+			continue;
+		}
+		else
+			break;
+	}
+	for (int i = 0; i < tenth; i++) {
+		temptenth *= 10;
+	}
+	for (int i = 0; i <=tenth; i++){
+		resultstring += a / temptenth+48;
+		a %= temptenth;
+		temptenth /= 10;
+	}
+	return resultstring;
+}
 void initcpp(DFA dfa)
 {
 
@@ -181,18 +421,12 @@ void initcpp(DFA dfa)
 	outputcpp("using namespace std;");
 	outputcpp("vector<pair<string,string>>lexresult;");
 	outputcpp("string element=\"\";");
-	//outputcpp("\n void main()");
-//	outputcpp(" {\n ifstream ifile;");
-	//outputcpp("	ifile.open(\"lex.l\", ios::in);");
-	//outputcpp("for(;;){");
-	//kuohao++;
-//	outputcpp("if(ifile.eof()) break;");
-//	outputcpp("char current=ifile.get();");
 	outputcpp("struct DFANode\n{");
 	outputcpp("vector<int> newNode;");
 	outputcpp("vector<pair<int, int>> out;");
 	outputcpp("int state;");
 	outputcpp("int NodeNumber;");
+	outputcpp("string action;");
 	outputcpp("};");
 	outputcpp("class DFA{");
 	outputcpp("public:");
@@ -220,11 +454,11 @@ void initcpp(DFA dfa)
 	for (int i = 0; i < dfa.ALLNode.size(); i++)
 	{
 		string a = "node";
-		a += i + 48;
+		a += transtostringnumber(i);
 		outputcpp("DFANode " + a + ";");
 		string c = a;
 		c += ".NodeNumber=";
-		c += dfa.ALLNode[i].NodeNumber + 48;
+		c +=transtostringnumber( dfa.ALLNode[i].NodeNumber );
 		c += ";";
 		outputcpp(c);
 		for (int j = 0; j < dfa.ALLNode[i].out.size(); j++)
@@ -233,9 +467,10 @@ void initcpp(DFA dfa)
 			d += ".out.push_back(pair<int,int>('";
 			d += dfa.ALLNode[i].out[j].first;
 			d += "',";
-			d += dfa.ALLNode[i].out[j].second + 48;
+			
+			d +=transtostringnumber( dfa.ALLNode[i].out[j].second);
 			d += "));";
-			//DFANode node;
+		//	DFANode node;
 			//node.out.push_back(pair<int, int>(dfa.ALLNode[i].out[j].first, dfa.ALLNode[i].out[j].second);
 			outputcpp(d);
 		}
@@ -244,6 +479,12 @@ void initcpp(DFA dfa)
 		e += dfa.ALLNode[i].state + 48;
 		e += ";";
 		outputcpp(e);
+		string g = a;
+		
+		g += ".action=\"";
+		g += dfa.ALLNode[i].action;
+		g += "\";";
+		outputcpp(g);
 		string f = "dfa.ALLNode.push_back(";
 		f += a;
 		f += ");";
@@ -255,27 +496,92 @@ void initcpp(DFA dfa)
 	outputcpp("	for (;;) {");
 	outputcpp("		current = ifile.get();");
 	outputcpp("	if (current==-1) {");
+	outputcpp("if(currentNode!=0){");
 	outputcpp("		if (ifAcc(currentNode, dfa)) {");
 	outputcpp("if(element!=\"\"&&element!=\" \"){");
-	outputcpp("			lexresult.push_back(pair<string, string>(element, action));");
+	outputcpp("			lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));");
 	outputcpp("				element = \"\";");
 	outputcpp("currentNode=0;\n}\n}");
 	outputcpp("else abort();");
+	outputcpp("}");
 	outputcpp("break;\n}");
-	outputcpp("	if (current != ' ') {");
+	outputcpp("	if (current != ' '&&current!='+'&&current!='*'&&current!='('&&current!=')'&&current!='{'&&current!='}'&&current!='\\n'&&current!='=') {");
 	outputcpp("	element += current;");
 	outputcpp("currentNode = transState(currentNode, current, dfa);");
 	outputcpp("continue;\n  }");
 	outputcpp("	else {");
+	vector<pair<string, string>> actiontable;
+	actiontable.push_back(pair<string,string>("+", "add"));
+	actiontable.push_back(pair<string, string>("*", "mult"));
+	actiontable.push_back(pair<string, string>("(", "leftbra"));
+	actiontable.push_back(pair<string, string>(")", "rightbra"));
+	actiontable.push_back(pair<string, string>("{", "lefthuakuohao"));
+	actiontable.push_back(pair<string, string>("}", "righthuakuohao"));
+	actiontable.push_back(pair<string, string>("=", "equal"));
+	for (int tmp = 0; tmp < actiontable.size(); tmp++)
+	{
+		outputcpp("if (current=='"+actiontable[tmp].first+"'){");
+		outputcpp("if(currentNode!=0){");
+		outputcpp("		if (ifAcc(currentNode, dfa)) {");
+		outputcpp("			lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));");
+		outputcpp("				element = \"\";");
+		outputcpp("currentNode=0;\n}");
+		outputcpp("	else {");
+		outputcpp("	cout <<\"error!\" << endl;");
+		outputcpp("abort();\n}");
+		outputcpp("}");
+		outputcpp("element+=current;");
+		outputcpp("lexresult.push_back(pair<string, string>(element, \""+actiontable[tmp].second+"\"));");
+		outputcpp("element=\"\";");
+		outputcpp("continue;\n}");
+	}
+	outputcpp("if (current=='\\n'||current==\" \"){");
 	outputcpp("		if (ifAcc(currentNode, dfa)) {");
-	outputcpp("			lexresult.push_back(pair<string, string>(element, action));");
+	outputcpp("			lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));");
 	outputcpp("				element = \"\";");
-	outputcpp("currentNode=0;");
-	outputcpp("continue;\n}");
+	outputcpp("currentNode=0;\n}");
+	outputcpp("}");
+	/*outputcpp("		if (ifAcc(currentNode, dfa)) {");
+	outputcpp("			lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));");
+	outputcpp("				element = \"\";");
+	outputcpp("currentNode=0;\n}");
 	outputcpp("	else {");
 	outputcpp("	cout <<\"error!\" << endl;");
-	outputcpp("abort();");	
-	outputcpp("}\n}\n}	for (int i = 0; i < lexresult.size(); i++){\ncout << lexresult[i].first << \",\" << lexresult[i].second << endl;\n}\nsystem(\"pause\");\n}");
+	outputcpp("abort();\n}");	
+	outputcpp("if (current=='+'){");
+	outputcpp("element+=current;");
+	outputcpp("lexresult.push_back(pair<string, string>(element, \"add\"));");
+	outputcpp("element=\"\";");
+	outputcpp("continue;\n}");
+	outputcpp("if (current=='*'){");
+	outputcpp("element+=current;");
+	outputcpp("lexresult.push_back(pair<string, string>(element, \"mult\"));");
+	outputcpp("element=\"\";");
+	outputcpp("continue;\n}");
+	outputcpp("if (current=='('){");
+	outputcpp("element+=current;");
+	outputcpp("lexresult.push_back(pair<string, string>(element, \"leftbra\"));");
+	outputcpp("element=\"\";");
+	outputcpp("continue;\n}");
+	outputcpp("if (current==')'){");
+	outputcpp("element+=current;");
+	outputcpp("lexresult.push_back(pair<string, string>(element, \"rightbra\"));");
+	outputcpp("element=\"\";");
+	outputcpp("continue;\n}");
+	outputcpp("if (current=='{'){");
+	outputcpp("element+=current;");
+	outputcpp("lexresult.push_back(pair<string, string>(element, \"lefthuakuohao\"));");
+	outputcpp("element=\"\";");
+	outputcpp("continue;\n}");
+	outputcpp("if (current=='}'){");
+	outputcpp("element+=current;");
+	outputcpp("lexresult.push_back(pair<string, string>(element, \"righthuakuohao\"));");
+	outputcpp("element=\"\";");
+	outputcpp("continue;\n}");*/
+	outputcpp("	else {");
+	outputcpp("	cout <<\"不能识别的操作！\" << endl;");
+	outputcpp("abort();\n}");
+	outputcpp("}\n}\n	for (int i = 0; i < lexresult.size(); i++){\ncout << lexresult[i].first << \",\" << lexresult[i].second << endl;\n}\nsystem(\"pause\");\n}");
 }
 
 void outputcpp(string a)
@@ -366,10 +672,45 @@ void outputcpp(string a)
 
 void main()
 {
+	readFile();
 	SetStack();
 	string result;
 	vector<string> inputs;
-	string action;
+	map<string, string>::iterator it = id2re.begin();
+	int num = 0;
+	for (; it != id2re.end(); ++it)
+	{
+		cout << it->first;
+		if (it->second.find('$') != -1)
+		{
+			inputs.push_back(it->second.substr(0, it->second.find('$')));
+			inputs.push_back(it->second.substr(it->second.find('$') + 1, it->second.size() - 1));
+			for (int i = num; i < inputs.size(); i++) {
+				result = TurnSuffix(inputs[i]);
+				cout << result << endl;
+				NFA newnfa(it->first);
+				setsofNFA.push_back(newnfa.structNFA(result));
+			}
+			setsofNFA[num] = linkNFA(setsofNFA[num], setsofNFA[num + 1]);//合并简单NFA，成为复杂NFA
+			setsofNFA.pop_back();
+			inputs.pop_back();
+		}
+		else
+		{
+			inputs.push_back(it->second);
+			result = TurnSuffix(inputs[num]);
+			cout << result << endl;
+			NFA newnfa(it->first);
+			setsofNFA.push_back(newnfa.structNFA(result));
+		}
+		num++;
+	}
+	for (int i = 1; i < setsofNFA.size(); i++)
+	{
+		setsofNFA[0] = mergeNFA(setsofNFA[0], setsofNFA[i]);
+	}
+	cout << "构建NFA完成！" << endl;
+	/*string action;
 	inputs.push_back("a");
 	inputs.push_back("b|c*");
 	inputs.push_back("b|c+");
@@ -394,10 +735,13 @@ void main()
 	//for (int i = 1; i < setsofNFA.size(); i++)
 	//{
 		setsofNFA[0] = mergeNFA(setsofNFA[0], setsofNFA[2]);
-	//}
+	//}*/
 	DFA dfa;
+	dfa.createSymbolTable(symbolTable1);
 	dfa=dfa.turnDFA(setsofNFA[0]);
+	cout << "转换DFA完成！" << endl;
 //	dfa.ALLNode[3].out .push_back( pair<int, int>(80,3));
 	generateCode(dfa);
+	cout << "转换代码完成！" << endl;
 	system("pause");
 }

@@ -1,1 +1,4 @@
-ab c 
+void main()
+{
+a1+b*c
+}

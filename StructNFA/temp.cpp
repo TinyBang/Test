@@ -1,16 +1,20 @@
-
+#pragma once
 #include<iostream>
 #include<vector>
 #include<string>
-#include<fstream>
+#include<map>
+#include"NFA.h"
+#define nothing -1
 using namespace std;
 
-vector<pair<string, string>> lexresult;
-string element="";
+vector<int> symbolTable;
+int nodeNumber = 0;
+
 
 
 struct DFANode
 {
+public:
 	vector<int> newNode;//构成的NFANode
 	vector<pair<int, int>> out;//指向的DFANode
 	int state;//是否为可接受状态
@@ -26,54 +30,14 @@ public:
 };
 //初始化DFA
 
-int transState(int current,char edge,DFA dfa)
+int transState(int current,int edge,DFA dfa)
 {
-	int des=-1;
+	int des;
 	for (int i=0;i<dfa.ALLNode[current].out.size();i++)
 	{
 		if (dfa.ALLNode[current].out[i].first == edge)
 			des = dfa.ALLNode[current].out[i].second;
-		break;
-	}
-	return des;
-}
-bool ifAcc(int currentNode,DFA dfa)
-{
-	if (dfa.ALLNode[currentNode].state == 1)
-		return true;
-	else
-		return false;
-}
-void main()
-{
-	ifstream ifile("lex.l",iostream::in);
-	DFA dfa;
 
-	int currentNode = 0;
-	char current;
-	string action;
-	for (;;){
-		if (!ifile.eof()) {
-			current = ifile.get();
-		}
-		else
-			break;
-		if (current != ' '){
-			element += current;
-			currentNode=transState(currentNode, current, dfa);
-			continue;
-		}
-		else{
-			if (ifAcc(currentNode, dfa)){
-				lexresult.push_back(pair<string, string>(element, action));
-				element = "";
-				continue;
-			}
-			else{
-				cout << "error!" << endl;
-				abort();
-			}
-		}
 	}
 }
 

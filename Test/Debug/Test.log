@@ -1,5 +1,0 @@
-﻿  yylex.cpp
-f:\文档\github\test-master\test\yylex.cpp(23): warning C4018: “<”: 有符号/无符号不匹配
-f:\文档\github\test-master\test\yylex.cpp(115): warning C4018: “<”: 有符号/无符号不匹配
-  Test.vcxproj -> F:\文档\GitHub\Test-master\Debug\Test.exe
-  Test.vcxproj -> F:\文档\GitHub\Test-master\Debug\Test.pdb (Full PDB)

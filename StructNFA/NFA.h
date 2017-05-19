@@ -16,7 +16,6 @@ struct Node
 	int out2;
 	int Edge;
 	int State;
-	int NodeNumber;
 	string action="";
 };
 class NFA
