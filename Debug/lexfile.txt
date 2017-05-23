@@ -1,0 +1,6 @@
+a1 id
++ add
+b id
+* mult
+c id
+#

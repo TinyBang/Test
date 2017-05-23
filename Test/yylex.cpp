@@ -5,6 +5,8 @@
 using namespace std;
 vector<pair<string, string>>lexresult;
 string element = "";
+ofstream ofile;
+void outputlex(vector<pair<string, string>>lexresult);
 struct DFANode
 {
 	vector<int> newNode;
@@ -8066,21 +8068,23 @@ void main()
 			}
 			break;
 		}
-		if (current != ' '&&current != '+'&&current != '*'&&current != '('&&current != ')'&&current != '{'&&current != '}'&&current != '\n') {
+		if (current != ' '&&current != '+'&&current != '*'&&current != '('&&current != ')'&&current != '{'&&current != '}'&&current != '\n'&&current != '=') {
 			element += current;
 			currentNode = transState(currentNode, current, dfa);
 			continue;
 		}
 		else {
 			if (current == '+') {
-				if (ifAcc(currentNode, dfa)) {
-					lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));
-					element = "";
-					currentNode = 0;
-				}
-				else {
-					cout << "error!" << endl;
-					abort();
+				if (currentNode != 0) {
+					if (ifAcc(currentNode, dfa)) {
+						lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));
+						element = "";
+						currentNode = 0;
+					}
+					else {
+						cout << "error!" << endl;
+						abort();
+					}
 				}
 				element += current;
 				lexresult.push_back(pair<string, string>(element, "add"));
@@ -8088,14 +8092,16 @@ void main()
 				continue;
 			}
 			if (current == '*') {
-				if (ifAcc(currentNode, dfa)) {
-					lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));
-					element = "";
-					currentNode = 0;
-				}
-				else {
-					cout << "error!" << endl;
-					abort();
+				if (currentNode != 0) {
+					if (ifAcc(currentNode, dfa)) {
+						lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));
+						element = "";
+						currentNode = 0;
+					}
+					else {
+						cout << "error!" << endl;
+						abort();
+					}
 				}
 				element += current;
 				lexresult.push_back(pair<string, string>(element, "mult"));
@@ -8103,14 +8109,16 @@ void main()
 				continue;
 			}
 			if (current == '(') {
-				if (ifAcc(currentNode, dfa)) {
-					lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));
-					element = "";
-					currentNode = 0;
-				}
-				else {
-					cout << "error!" << endl;
-					abort();
+				if (currentNode != 0) {
+					if (ifAcc(currentNode, dfa)) {
+						lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));
+						element = "";
+						currentNode = 0;
+					}
+					else {
+						cout << "error!" << endl;
+						abort();
+					}
 				}
 				element += current;
 				lexresult.push_back(pair<string, string>(element, "leftbra"));
@@ -8119,16 +8127,16 @@ void main()
 			}
 			if (current == ')') {
 				if (currentNode != 0) {
-				if (ifAcc(currentNode, dfa)) {
-					lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));
-					element = "";
-					currentNode = 0;
+					if (ifAcc(currentNode, dfa)) {
+						lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));
+						element = "";
+						currentNode = 0;
+					}
+					else {
+						cout << "error!" << endl;
+						abort();
+					}
 				}
-				else {
-					cout << "error!" << endl;
-					abort();
-				}
-			}
 				element += current;
 				lexresult.push_back(pair<string, string>(element, "rightbra"));
 				element = "";
@@ -8168,22 +8176,54 @@ void main()
 				element = "";
 				continue;
 			}
-			if (current == '\n'||current==' '){
+			if (current == '=') {
+				if (currentNode != 0) {
+					if (ifAcc(currentNode, dfa)) {
+						lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));
+						element = "";
+						currentNode = 0;
+					}
+					else {
+						cout << "error!" << endl;
+						abort();
+					}
+				}
+				element += current;
+				lexresult.push_back(pair<string, string>(element, "equal"));
+				element = "";
+				continue;
+			}
+			if (current == '\n' || current == ' ') {
 				if (ifAcc(currentNode, dfa)) {
 					lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));
 					element = "";
 					currentNode = 0;
 				}
-
-				}
+			}
 			else {
 				cout << "不能识别的操作！" << endl;
 				abort();
 			}
 		}
 	}
-	for (int i = 0; i < lexresult.size(); i++) {
-		cout << lexresult[i].first << "," << lexresult[i].second << endl;
-	}
+	outputlex(lexresult);
 	system("pause");
+}
+void outputcpp(string a)
+{
+	for (int i = 0; i < a.length(); i++)
+	{
+		ofile.put(a[i]);
+	}
+}
+void outputlex(vector<pair<string, string>>lexresult) {
+	ofile.open("lexfile.txt", ios::out);
+	for (int i = 0; i < lexresult.size(); i++) {
+		outputcpp(lexresult[i].first);
+		outputcpp(" ");
+		outputcpp(lexresult[i].second);
+		outputcpp("\n");
+	}
+	outputcpp("#");
+	ofile.close();
 }

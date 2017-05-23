@@ -419,6 +419,8 @@ void initcpp(DFA dfa)/*输出cpp文件*//*cpp文件保存了DFA，每次根据DFA判定状态*/
 	outputcpp("using namespace std;");
 	outputcpp("vector<pair<string,string>>lexresult;");
 	outputcpp("string element=\"\";");
+	outputcpp("ofstream ofile;");
+	outputcpp("void outputlex(vector<pair<string, string>>lexresult);");
 	outputcpp("struct DFANode\n{");
 	outputcpp("vector<int> newNode;");
 	outputcpp("vector<pair<int, int>> out;");
@@ -531,7 +533,7 @@ void initcpp(DFA dfa)/*输出cpp文件*//*cpp文件保存了DFA，每次根据DFA判定状态*/
 		outputcpp("element=\"\";");
 		outputcpp("continue;\n}");
 	}
-	outputcpp("if (current=='\\n'||current==\" \"){");
+	outputcpp("if (current=='\\n'||current==' '){");
 	outputcpp("		if (ifAcc(currentNode, dfa)) {");
 	outputcpp("			lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));");
 	outputcpp("				element = \"\";");
@@ -540,7 +542,19 @@ void initcpp(DFA dfa)/*输出cpp文件*//*cpp文件保存了DFA，每次根据DFA判定状态*/
 	outputcpp("	else {");
 	outputcpp("	cout <<\"不能识别的操作！\" << endl;");
 	outputcpp("abort();\n}");
-	outputcpp("}\n}\n	for (int i = 0; i < lexresult.size(); i++){\ncout << lexresult[i].first << \",\" << lexresult[i].second << endl;\n}\nsystem(\"pause\");\n}");
+	outputcpp("}\n}\n outputlex(lexresult);\n	system(\"pause\");\n}");
+	outputcpp("void outputcpp(string a)\n{");
+		outputcpp("for (int i = 0; i < a.length(); i++)\n{");
+		outputcpp("	ofile.put(a[i]);\n}\n}");
+		outputcpp("void outputlex(vector<pair<string, string>>lexresult) {");
+		outputcpp("ofile.open(\"lexfile.txt\", ios::out);");
+		outputcpp("for (int i = 0; i < lexresult.size(); i++) {");
+		outputcpp("outputcpp(lexresult[i].first);");
+		outputcpp("outputcpp(\" \");");
+		outputcpp("outputcpp(lexresult[i].second);");
+		outputcpp("outputcpp(\"\\n\");\n}");
+		outputcpp("outputcpp(\"#\");");
+		outputcpp("ofile.close();\n}");
 }
 
 void outputcpp(string a)
