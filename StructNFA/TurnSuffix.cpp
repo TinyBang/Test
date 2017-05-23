@@ -380,14 +380,12 @@ NFA mergeNFA(NFA a, NFA b)
 	}
 	return headNFA;
 }
-void generateCode(DFA dfa) {
+void generateCode(DFA dfa) {/*创建代码*/
 	ofile.open("yylex.cpp", ios::out);
 	initcpp(dfa);
-	//DFANode currentNode = dfa.ALLNode[0];
-	//DFAToCode(dfa.ALLNode[0], dfa);
 	ofile.close();
 }
-string transtostringnumber(int a) {
+string transtostringnumber(int a) {/*将ascii码的数字转化成string类型的数字串*/
 	int tenth = 0;
 	int temp = a;
 	int temptenth = 1;
@@ -411,7 +409,7 @@ string transtostringnumber(int a) {
 	}
 	return resultstring;
 }
-void initcpp(DFA dfa)
+void initcpp(DFA dfa)/*输出cpp文件*//*cpp文件保存了DFA，每次根据DFA判定状态*/
 {
 
 	outputcpp("#include<vector>");
@@ -470,8 +468,6 @@ void initcpp(DFA dfa)
 			
 			d +=transtostringnumber( dfa.ALLNode[i].out[j].second);
 			d += "));";
-		//	DFANode node;
-			//node.out.push_back(pair<int, int>(dfa.ALLNode[i].out[j].first, dfa.ALLNode[i].out[j].second);
 			outputcpp(d);
 		}
 		string e = a;
@@ -541,43 +537,6 @@ void initcpp(DFA dfa)
 	outputcpp("				element = \"\";");
 	outputcpp("currentNode=0;\n}");
 	outputcpp("}");
-	/*outputcpp("		if (ifAcc(currentNode, dfa)) {");
-	outputcpp("			lexresult.push_back(pair<string, string>(element, dfa.ALLNode[currentNode].action));");
-	outputcpp("				element = \"\";");
-	outputcpp("currentNode=0;\n}");
-	outputcpp("	else {");
-	outputcpp("	cout <<\"error!\" << endl;");
-	outputcpp("abort();\n}");	
-	outputcpp("if (current=='+'){");
-	outputcpp("element+=current;");
-	outputcpp("lexresult.push_back(pair<string, string>(element, \"add\"));");
-	outputcpp("element=\"\";");
-	outputcpp("continue;\n}");
-	outputcpp("if (current=='*'){");
-	outputcpp("element+=current;");
-	outputcpp("lexresult.push_back(pair<string, string>(element, \"mult\"));");
-	outputcpp("element=\"\";");
-	outputcpp("continue;\n}");
-	outputcpp("if (current=='('){");
-	outputcpp("element+=current;");
-	outputcpp("lexresult.push_back(pair<string, string>(element, \"leftbra\"));");
-	outputcpp("element=\"\";");
-	outputcpp("continue;\n}");
-	outputcpp("if (current==')'){");
-	outputcpp("element+=current;");
-	outputcpp("lexresult.push_back(pair<string, string>(element, \"rightbra\"));");
-	outputcpp("element=\"\";");
-	outputcpp("continue;\n}");
-	outputcpp("if (current=='{'){");
-	outputcpp("element+=current;");
-	outputcpp("lexresult.push_back(pair<string, string>(element, \"lefthuakuohao\"));");
-	outputcpp("element=\"\";");
-	outputcpp("continue;\n}");
-	outputcpp("if (current=='}'){");
-	outputcpp("element+=current;");
-	outputcpp("lexresult.push_back(pair<string, string>(element, \"righthuakuohao\"));");
-	outputcpp("element=\"\";");
-	outputcpp("continue;\n}");*/
 	outputcpp("	else {");
 	outputcpp("	cout <<\"不能识别的操作！\" << endl;");
 	outputcpp("abort();\n}");
@@ -592,82 +551,6 @@ void outputcpp(string a)
 		ofile.put(a[i]);
 	}
 }
-/*void  DFAToCode(DFANode node, DFA dfa)
-{
-	if (node.out.size() != 0)
-		for (int i = 0; i < node.out.size(); i++)
-		{
-			if (node.out[i].second != node.NodeNumber) {
-				string c="";
-				if (i == 0)
-					c += "if(current=='";
-				else
-					c += "else if(current=='";
-				c += node.out[i].first;
-				c += "'){";
-				outputcpp(c);
-				outputcpp("element+=current;");
-				outputcpp("current=ifile.get();");
-				kuohao++;
-				DFAToCode(dfa.ALLNode[node.out[i].second], dfa);
-				if (i == node.out.size() - 1 && node.state == 1)
-				{
-					outputcpp("else{");
-					if (node.state == 1) {
-						outputcpp("if(element.size()!=0){");
-						outputcpp("result.push_back(pair<string, string>(element, id)); ");
-						outputcpp("element=\"\";");
-						outputcpp("}");
-						outputcpp("else abort;");
-					}
-					else {
-						outputcpp("result.push_back(pair<string, string>(element, id)); ");
-						outputcpp("element=\"\";");
-					}
-					outputcpp("continue;");
-					outputcpp("}");
-					outputcpp("}");
-				}
-			}
-			else
-			{
-				outputcpp("for(;;)");
-				string a="";
-				a += "if(current=='";
-				a += node.out[i].first;
-				a += "'){";
-				outputcpp(a);
-				outputcpp("element+=current;");
-				outputcpp("current=ifile.get();");
-				outputcpp("continue;");
-				outputcpp("}");
-				outputcpp("else{");
-				outputcpp("result.push_back(pair<string, string>(element, id)); ");
-				outputcpp("element=\"\";");
-				outputcpp("break;");
-				outputcpp("}");
-				outputcpp("}");
-			}
-		}
-	else
-	{
-		if (node.state == 1)
-		{
-				outputcpp("}");
-		////	outputcpp("else{");
-		//	outputcpp("result.push_back(pair<string, string>(element, id)); ");
-		//	outputcpp("element=\"\";");
-		//	outputcpp("continue;");
-		//	outputcpp("}");
-		}
-		else
-		{
-			cout << "error" << endl;
-			abort;
-		}
-	}
-
-}*/
 
 
 void main()
@@ -710,37 +593,10 @@ void main()
 		setsofNFA[0] = mergeNFA(setsofNFA[0], setsofNFA[i]);
 	}
 	cout << "构建NFA完成！" << endl;
-	/*string action;
-	inputs.push_back("a");
-	inputs.push_back("b|c*");
-	inputs.push_back("b|c+");
-	vector<string>action1;
-	string a = "id";
-	action1.push_back(a);
-	action1.push_back(a);
-	a = "integer";
-	action1.push_back(a);
-	for (int i = 0; i < inputs.size(); i++) {
-		result = TurnSuffix(inputs[i]);
-		cout << result << endl;
-		NFA newnfa(action1[i]);
-		setsofNFA.push_back(newnfa.structNFA(result));
-	}
-	if(setsofNFA.size()>=1)
-	for (int i = 1; i < 2; i++)
-	{
-		setsofNFA[0]=linkNFA(setsofNFA[0], setsofNFA[i]);//合并简单NFA，成为复杂NFA
-	}
-	//setsofNFA.push_back(setsofNFA[0]);
-	//for (int i = 1; i < setsofNFA.size(); i++)
-	//{
-		setsofNFA[0] = mergeNFA(setsofNFA[0], setsofNFA[2]);
-	//}*/
 	DFA dfa;
 	dfa.createSymbolTable(symbolTable1);
 	dfa=dfa.turnDFA(setsofNFA[0]);
 	cout << "转换DFA完成！" << endl;
-//	dfa.ALLNode[3].out .push_back( pair<int, int>(80,3));
 	generateCode(dfa);
 	cout << "转换代码完成！" << endl;
 	system("pause");

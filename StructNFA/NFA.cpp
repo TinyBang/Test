@@ -1,16 +1,16 @@
 #include"NFA.h"
-NFA::NFA(string action)
+NFA::NFA(string action)/*带有动作的NFA状态*/
 {
 	this->action += action;
 	createNode();
 	HeadAndTail.push_back(0);
 }
-NFA::NFA()
+NFA::NFA()/*缺省构造函数*/
 {
 	createNode();
 	HeadAndTail.push_back(0);
 };
-int NFA::createNode() {
+int NFA::createNode() {/*创建NFA结点，并且初始化*/
 	Node newNode;
 	newNode.Edge = -1;
 	newNode.out1 = newNode.out2=-1;
@@ -24,7 +24,7 @@ vector<int>NFA::NodeOr(int edge,  vector<int>HeadAndTail)
 	int head = createNode();
 	int  a=createNode();
 	int end = createNode();
-AllNode[head].out1 = HeadAndTail[0];
+	AllNode[head].out1 = HeadAndTail[0];
 	HeadAndTail[0] =head;
 	HeadAndTail.push_back( end);
 	AllNode[head].out2 = a;
@@ -58,7 +58,7 @@ vector<int>NFA::NodeStar(vector<int>HeadAndTail)
 	HeadAndTail.push_back(b);
 	return HeadAndTail;
 }
-vector<int>NFA::NodePlus(vector<int>HeadAndTail)
+vector<int>NFA::NodePlus(vector<int>HeadAndTail)/*正闭包的逻辑和闭包相似，只是少了一条空边*/
 {
 	int head = createNode();
 	int a = createNode();
@@ -79,22 +79,6 @@ vector<int>NFA::NodePlus(vector<int>HeadAndTail)
 	}
 	HeadAndTail.push_back(b);
 	return HeadAndTail;
-}
-void NFA::printNFA(vector<int>HeadAndTail)
-{
-	/*Path.push_back(HeadAndTail[0]);
-	for (;;)
-	{
-		if (Path[Path.size() - 1]->out1 != NULL)
-			Path.push_back(Path[Path.size() - 1]->out1);
-		else
-			break;
-	}
-	for (;;)
-	{
-
-	}*/
-
 }
 NFA NFA::structNFA(string EP)
 {
