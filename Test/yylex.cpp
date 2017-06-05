@@ -23,7 +23,7 @@ public:
 };
 int transState(int current, char edge, DFA dfa) {
 	int des = -1;
-	for (int i = 0; i<dfa.ALLNode[current].out.size(); i++) {
+	for (int i = 0; i < dfa.ALLNode[current].out.size(); i++) {
 		if (dfa.ALLNode[current].out[i].first == edge) {
 			des = dfa.ALLNode[current].out[i].second;
 			break;
@@ -8087,7 +8087,7 @@ void main()
 					}
 				}
 				element += current;
-				lexresult.push_back(pair<string, string>(element, "add"));
+				lexresult.push_back(pair<string, string>(element, "+"));
 				element = "";
 				continue;
 			}
@@ -8104,7 +8104,7 @@ void main()
 					}
 				}
 				element += current;
-				lexresult.push_back(pair<string, string>(element, "mult"));
+				lexresult.push_back(pair<string, string>(element, "*"));
 				element = "";
 				continue;
 			}

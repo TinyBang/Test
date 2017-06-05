@@ -509,8 +509,8 @@ void initcpp(DFA dfa)/*输出cpp文件*//*cpp文件保存了DFA，每次根据DFA判定状态*/
 	outputcpp("continue;\n  }");
 	outputcpp("	else {");
 	vector<pair<string, string>> actiontable;
-	actiontable.push_back(pair<string,string>("+", "add"));
-	actiontable.push_back(pair<string, string>("*", "mult"));
+	actiontable.push_back(pair<string,string>("+", "+"));
+	actiontable.push_back(pair<string, string>("*", "*"));
 	actiontable.push_back(pair<string, string>("(", "leftbra"));
 	actiontable.push_back(pair<string, string>(")", "rightbra"));
 	actiontable.push_back(pair<string, string>("{", "lefthuakuohao"));

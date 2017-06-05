@@ -1,0 +1,12 @@
+void id
+main id
+( leftbra
+) rightbra
+{ lefthuakuohao
+a id
++ +
+b id
+* *
+c id
+} righthuakuohao
+#
